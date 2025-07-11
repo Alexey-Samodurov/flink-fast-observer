@@ -1,0 +1,119 @@
+version: '2.2'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15
+    container_name: flink_observer_postgres
+    environment:
+      POSTGRES_DB: flink_observer
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d flink_observer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Flink JobManager для первого кластера
+  flink-jobmanager-1:
+    image: flink:1.20.1-scala_2.12
+    container_name: flink_cluster_1_jobmanager
+    ports:
+      - "8081:8081"
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager-1
+    command: jobmanager
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/config || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Flink TaskManager для первого кластера
+  flink-taskmanager-1:
+    image: flink:1.20.1-scala_2.12
+    container_name: flink_cluster_1_taskmanager
+    depends_on:
+      - flink-jobmanager-1
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager-1
+    command: taskmanager
+    scale: 1  # Два TaskManager'а для первого кластера
+
+  # Flink JobManager для второго кластера
+  flink-jobmanager-2:
+    image: flink:1.20.1-scala_2.12
+    container_name: flink_cluster_2_jobmanager
+    ports:
+      - "8082:8081"
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager-2
+    command: jobmanager
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/config || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Flink TaskManager для второго кластера
+  flink-taskmanager-2:
+    image: flink:1.20.1-scala_2.12
+    container_name: flink_cluster_2_taskmanager
+    depends_on:
+      - flink-jobmanager-2
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager-2
+    command: taskmanager
+    scale: 1  # Один TaskManager для второго кластера
+
+#  # Наше приложение Flink Observer
+#  app:
+#    build: .
+#    container_name: flink_observer_app
+#    ports:
+#      - "8000:8000"
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      flink-jobmanager-1:
+#        condition: service_healthy
+#      flink-jobmanager-2:
+#        condition: service_healthy
+#    environment:
+#      DATABASE_URL: postgresql://user:password@postgres:5432/flink_observer
+#      LOG_LEVEL: INFO
+#      DEBUG: "true"
+#    volumes:
+#      - .:/app
+#    networks:
+#      - flink_network
+#    command: python -m flink_observer.main
+#
+#  # Nginx для проксирования (опционально)
+#  nginx:
+#    image: nginx:alpine
+#    container_name: flink_observer_nginx
+#    ports:
+#      - "80:80"
+#    depends_on:
+#      - app
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#    networks:
+#      - flink_network
+
+volumes:
+  postgres_data:

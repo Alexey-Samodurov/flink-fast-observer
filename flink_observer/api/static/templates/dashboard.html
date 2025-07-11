@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flink Observer Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-stream"></i> Flink Observer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="/api/docs" target="_blank">
+                        <i class="fas fa-book"></i> API Docs
+                    </a>
+                    <a class="nav-link" href="#" onclick="Actions.collectData()">
+                        <i class="fas fa-sync-alt"></i> Сбор данных
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="container mt-4">
+        <!-- Статистики -->
+        <div class="row mb-4" id="stats-row">
+            <div class="col-md-3 mb-3">
+                <div class="card card-stats">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-1">Кластеры</h5>
+                                <h3 class="mb-0" id="total-clusters">-</h3>
+                                <small class="text-muted">Всего</small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-server fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card card-stats success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-1">Запущенные</h5>
+                                <h3 class="mb-0" id="running-jobs">-</h3>
+                                <small class="text-muted">Джобы</small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-play-circle fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card card-stats danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-1">Упавшие</h5>
+                                <h3 class="mb-0" id="failed-jobs">-</h3>
+                                <small class="text-muted">Джобы</small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card card-stats info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-1">Всего джобов</h5>
+                                <h3 class="mb-0" id="total-jobs">-</h3>
+                                <small class="text-muted">Общее количество</small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-tasks fa-2x text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Управление кластерами -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-server"></i> Кластеры
+                        </h5>
+                        <button class="btn btn-primary btn-sm" onclick="showAddClusterModal()">
+                            <i class="fas fa-plus"></i> Добавить кластер
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="clusters-container">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Загрузка...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Загрузка кластеров...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Последние джобы -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock"></i> Последние джобы
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="jobs-container">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Загрузка...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Загрузка джобов...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования кластера -->
+    <div class="modal fade" id="addClusterModal" tabindex="-1" aria-labelledby="addClusterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addClusterModalLabel">Добавить кластер</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addClusterForm">
+                        <div class="mb-3">
+                            <label for="cluster-name" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Имя кластера <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="cluster-name" required
+                                   placeholder="Введите имя кластера">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cluster-url" class="form-label">
+                                <i class="fas fa-link me-1"></i>URL <span class="text-danger">*</span>
+                            </label>
+                            <input type="url" class="form-control" id="cluster-url" required
+                                   placeholder="http://localhost:8081">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cluster-description" class="form-label">
+                                <i class="fas fa-comment me-1"></i>Описание
+                            </label>
+                            <textarea class="form-control" id="cluster-description" rows="3"
+                                      placeholder="Опишите кластер (необязательно)"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="cluster-active" checked>
+                            <label class="form-check-label" for="cluster-active">
+                                <i class="fas fa-power-off me-1"></i>Активный
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addClusterBtn" onclick="addCluster()">
+                        <i class="fas fa-plus me-1"></i>Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка обновления -->
+    <button class="btn btn-primary refresh-btn" onclick="refreshData()" title="Обновить данные">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <!-- Скрипты -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
