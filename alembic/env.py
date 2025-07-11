@@ -11,6 +11,8 @@ import sys
 # Добавляем путь к нашему проекту
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
+from flink_observer.data.models import FlinkCluster, JobSnapshot
+
 # Импортируем наши модели
 from flink_observer.data.database import Base
 
