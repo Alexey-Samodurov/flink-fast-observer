@@ -6,18 +6,15 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import logging
 from datetime import datetime
-import asyncio
-import os
 from pathlib import Path
 
-from database import get_database, engine
+from flink_observer.data.database import get_database, engine
 from flink_observer.data.models import Base
 from flink_observer.data.repositories import ClusterRepository, JobRepository
 from flink_observer.service.data_collector import DataCollector, ScheduledCollector
 from flink_observer.api.schemas import (
     ClusterCreate, ClusterUpdate, ClusterResponse, ClusterSummary,
-    JobSnapshotResponse, JobDetails, JobStatistics, CollectionResult,
-    CollectionSummary, HealthCheck, ErrorResponse, SuccessResponse
+    JobSnapshotResponse, JobDetails, JobStatistics, CollectionSummary, HealthCheck, SuccessResponse
 )
 
 # Создаем таблицы

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, BigInteger
 from sqlalchemy.sql import func
 
-from database import Base
+from flink_observer.data.database import Base
 
 
 class FlinkCluster(Base):

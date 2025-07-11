@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-import asyncio
 from typing import List, Dict, Any
+import asyncio
 
-from database import SessionLocal
+from flink_observer.data.database import SessionLocal
 from flink_observer.data.models import FlinkCluster
 from flink_observer.data.repositories import ClusterRepository, JobRepository
 from flink_observer.service.flink_client import FlinkAPIClient

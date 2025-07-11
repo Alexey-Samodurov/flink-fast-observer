@@ -12,8 +12,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 # Импортируем наши модели
-from database import Base
-from flink_observer.data.models import FlinkCluster, JobSnapshot
+from flink_observer.data.database import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
