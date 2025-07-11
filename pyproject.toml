@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "flink-fast-observer"
+version = "0.1.0"
+description = "Описание проекта"
+authors = ["Aleksei Samodurov damestos988@gmail.com"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.14"
+sqlalchemy = "^2.0.0"
+alembic = "^1.13.0"
+psycopg2-binary = "^2.9.9"
+httpx = "^0.25.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
